@@ -27,10 +27,10 @@ const FireHoser = class FireHoser extends IFireHoser {
     super(streamName, firehoseOptions);
     this.streamName = streamName;
     
-    console.log('ignoring firehose options', firehoseOptions);
+    console.log('winston-firehose ignoring some options', firehoseOptions);
 
     this.firehose = new firehoser.QueueableJSONDeliveryStream(
-      streamName, 
+      this.streamName, 
       15000,
       100
     );
@@ -40,14 +40,7 @@ const FireHoser = class FireHoser extends IFireHoser {
    * @returns Promise
    */
   send(message) {
-    const params = {
-      DeliveryStreamName: this.streamName,
-      Record: {
-        Data: message,
-      },
-    };
-
-    return this.firehose.putRecord(params);
+    return this.firehose.putRecord(message);
   }
 };
 
@@ -64,9 +57,19 @@ const FirehoseLogger = class FirehoseLogger extends Transport {
     this.firehoser = options.firehoser || new FireHoser(streamName, firehoseOptions);
   }
 
-  log(info) {
-    const message = Object.assign({ timestamp: (new Date()).toISOString() }, info);
-    return this.firehoser.send(this.formatter(message));
+  log(info, callback) {
+    try { 
+      const message = Object.assign({ timestamp: (new Date()).toISOString() }, info);
+      this.firehoser.send(this.formatter(message));
+    } catch (ex) { 
+      console.error("Firehose log delivery failed!", ex);
+    } finally { 
+      // This probably has some real important behaviors like
+      // waiting for delivery of the log message and various 
+      // guarantees... I would know if I'd read the docs/code
+      // properly, wouldn't I? 
+      callback();
+    }   
   }
 };
 
