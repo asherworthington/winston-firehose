@@ -23,6 +23,7 @@
   "homepage": "https://github.com/pkallos/winston-firehose#readme",
   "dependencies": {
     "aws-sdk": "^2.3.14",
+    "firehoser": "^1.3.5",
     "winston-transport": "^4.2.0"
   },
   "devDependencies": {

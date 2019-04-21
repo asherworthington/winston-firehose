@@ -1,5 +1,6 @@
 const Transport = require('winston-transport');
 const AWS = require('aws-sdk');
+const firehoser = require('firehoser');
 
 AWS.config.setPromisesDependency(Promise);
 
@@ -25,7 +26,14 @@ const FireHoser = class FireHoser extends IFireHoser {
   constructor(streamName, firehoseOptions) {
     super(streamName, firehoseOptions);
     this.streamName = streamName;
-    this.firehose = new AWS.Firehose(firehoseOptions || {});
+    
+    console.log('ignoring firehose options', firehoseOptions);
+
+    this.firehose = new firehoser.QueueableJSONDeliveryStream(
+      streamName, 
+      15000,
+      100
+    );
   }
 
   /**
@@ -39,7 +47,7 @@ const FireHoser = class FireHoser extends IFireHoser {
       },
     };
 
-    return this.firehose.putRecord(params).promise();
+    return this.firehose.putRecord(params);
   }
 };
 
