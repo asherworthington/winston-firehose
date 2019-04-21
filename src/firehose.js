@@ -60,7 +60,7 @@ const FirehoseLogger = class FirehoseLogger extends Transport {
   log(info, callback) {
     try { 
       const message = Object.assign({ timestamp: (new Date()).toISOString() }, info);
-      this.firehoser.send(this.formatter(message));
+      this.firehoser.send(message);
     } catch (ex) { 
       console.error("Firehose log delivery failed!", ex);
     } finally { 
